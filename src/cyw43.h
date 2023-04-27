@@ -144,7 +144,8 @@ typedef struct _cyw43_t {
     #endif
 
     // mac from otp (or from cyw43_hal_generate_laa_mac if not set)
-    uint8_t mac[6];
+    uint8_t mac0[6];
+    uint8_t mac1[6];
 
     #if CYW43_ENABLE_BLUETOOTH
     bool bt_loaded;

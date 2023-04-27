@@ -266,7 +266,9 @@ typedef struct _cyw43_ll_t {
 void cyw43_ll_init(cyw43_ll_t *self, void *cb_data);
 void cyw43_ll_deinit(cyw43_ll_t *self);
 
-int cyw43_ll_bus_init(cyw43_ll_t *self, const uint8_t *mac);
+void cyw43_write_mac(cyw43_ll_t *self_in, const uint8_t mac[6], uint32_t iface);
+
+int cyw43_ll_bus_init(cyw43_ll_t *self, const uint8_t *mac0, const uint8_t *mac1);
 void cyw43_ll_bus_sleep(cyw43_ll_t *self, bool can_sleep);
 void cyw43_ll_process_packets(cyw43_ll_t *self);
 int cyw43_ll_ioctl(cyw43_ll_t *self, uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface);

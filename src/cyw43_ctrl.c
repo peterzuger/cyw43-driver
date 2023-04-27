@@ -179,12 +179,13 @@ static int cyw43_ensure_up(cyw43_t *self) {
 
     // Initialise the low-level driver
     #if !CYW43_USE_OTP_MAC
-    cyw43_hal_get_mac(CYW43_HAL_MAC_WLAN0, self->mac);
+    cyw43_hal_get_mac(CYW43_HAL_MAC_WLAN0, self->mac0);
+    cyw43_hal_get_mac(CYW43_HAL_MAC_WLAN1, self->mac1);
 
-    int ret = cyw43_ll_bus_init(&self->cyw43_ll, self->mac);
+    int ret = cyw43_ll_bus_init(&self->cyw43_ll, self->mac0, self->mac1);
     #else
     // Not setting mac address. It should come from otp
-    int ret = cyw43_ll_bus_init(&self->cyw43_ll, NULL);
+    int ret = cyw43_ll_bus_init(&self->cyw43_ll, NULL, NULL);
     #endif
 
     if (ret != 0) {
@@ -193,11 +194,13 @@ static int cyw43_ensure_up(cyw43_t *self) {
 
     #if CYW43_USE_OTP_MAC
     // Get our mac address cyw43_hal_get_mac can get this from cyw43_state.mac
-    cyw43_ll_wifi_get_mac(&self->cyw43_ll, self->mac);
+    cyw43_ll_wifi_get_mac(&self->cyw43_ll, self->mac0);
+    memcpy(self->mac1, self->mac0, 6); // both interfaces have the same MAC
     #endif
 
     CYW43_DEBUG("cyw43 loaded ok, mac %02x:%02x:%02x:%02x:%02x:%02x\n",
-        self->mac[0], self->mac[1], self->mac[2], self->mac[3], self->mac[4], self->mac[5]);
+                self->mac0[0], self->mac0[1], self->mac0[2],
+                self->mac0[3], self->mac0[4], self->mac0[5]);
 
     // Enable async events from low-level driver
     cyw43_sleep = CYW43_SLEEP_MAX;
@@ -629,6 +632,9 @@ int cyw43_wifi_join(cyw43_t *self, size_t ssid_len, const uint8_t *ssid, size_t 
         CYW43_THREAD_EXIT;
         return ret;
     }
+
+    // TODO: Why can STA and AP not use different iovars
+    cyw43_write_mac(&self->cyw43_ll, self->mac0, CYW43_ITF_STA);
 
     ret = cyw43_ll_wifi_join(&self->cyw43_ll, ssid_len, ssid, key_len, key, auth_type, bssid, channel);
 

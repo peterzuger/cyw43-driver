@@ -1463,7 +1463,12 @@ static void cyw43_write_iovar_n(cyw43_int_t *self, const char *var, size_t len, 
     cyw43_do_ioctl(self, SDPCM_SET, WLC_SET_VAR, varlen + len, iobuf, iface);
 }
 
-int cyw43_ll_bus_init(cyw43_ll_t *self_in, const uint8_t *mac) {
+void cyw43_write_mac(cyw43_ll_t *self_in, const uint8_t mac[6], uint32_t iface) {
+    cyw43_int_t *self = (void *)self_in;
+    cyw43_write_iovar_n(self, "cur_etheraddr", 6, mac, iface);
+}
+
+int cyw43_ll_bus_init(cyw43_ll_t *self_in, const uint8_t *mac0, const uint8_t *mac1) {
     cyw43_int_t *self = (void *)self_in;
 
     self->startup_t0 = cyw43_hal_ticks_us();
@@ -1819,9 +1824,13 @@ f2_ready:
     }
     #endif
 
-    if (mac) {
-        cyw43_write_iovar_n(self, "cur_etheraddr", 6, mac, WWD_STA_INTERFACE);
+    if (mac1) {
+        cyw43_write_mac(self_in, mac1, WWD_STA_INTERFACE);
     }
+
+    /* if (mac1) { */
+    /*     cyw43_write_iovar_n(self, "cur_etheraddr", 6, mac1, WWD_AP_INTERFACE); */
+    /* } */
 
     return 0;
 }
